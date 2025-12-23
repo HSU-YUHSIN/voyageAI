@@ -1,0 +1,8 @@
+{
+  "name": "VoyageAI - Smart Travel Planner",
+  "description": "An intelligent travel planning application that transforms natural language requests into structured, map-ready itineraries using Gemini AI.",
+  "requestFramePermissions": [
+    "geolocation",
+    "camera"
+  ]
+}
