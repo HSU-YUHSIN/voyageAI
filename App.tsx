@@ -57,7 +57,7 @@ const App: React.FC = () => {
     const currentDay = currentTrip.itinerary.find(d => d.day === day);
     if (!currentDay) return;
 
-    for (const activity of currentDay.activities) {
+    for (const activity of (currentDay.activities || [])) {
       if (!imageCache[activity.place] && !fetchingRefs.current.has(activity.place)) {
         fetchingRefs.current.add(activity.place);
         try {
