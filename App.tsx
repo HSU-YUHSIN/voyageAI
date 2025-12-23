@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { 
-  Send, MapPin, Calendar, Clock, Loader2, Sparkles, 
+import {
+  Send, MapPin, Calendar, Clock, Loader2, Sparkles,
   Navigation, ChevronRight, Globe, Compass, List, Map as MapIcon,
   ChevronLeft, MessageSquare, X, RefreshCw, ExternalLink, Link as LinkIcon,
   Camera, Languages, BookOpen, Info, Lightbulb, Camera as CameraIcon
@@ -34,13 +34,13 @@ const App: React.FC = () => {
   const [showChat, setShowChat] = useState(true);
   const [selectedLanguage, setSelectedLanguage] = useState('English');
   const [selectedImage, setSelectedImage] = useState<{ data: string, mimeType: string } | null>(null);
-  
+
   // High-Performance Destination Modal
   const [activeActivity, setActiveActivity] = useState<Activity | null>(null);
   const [imageCache, setImageCache] = useState<Record<string, string>>({});
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const fetchingRefs = useRef<Set<string>>(new Set());
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -142,7 +142,19 @@ const App: React.FC = () => {
       setSelectedImage(null);
       setUserInput('');
     } catch (err: any) {
-      setError("Failed to create the itinerary. Try being more specific with your link or request.");
+      console.error("Trip generation error:", err);
+      let errorMessage = "Failed to create the itinerary. Try being more specific with your link or request.";
+
+      const errString = err.toString().toLowerCase();
+      if (errString.includes('quota') || errString.includes('429') || errString.includes('resource exhausted')) {
+        errorMessage = "Google Gemini API Quota Exceeded. Please check your API usage limits.";
+      } else if (errString.includes('403')) {
+        errorMessage = "Access Denied (403). Your API Key may have restrictions (e.g. localhost not allowed) or the API is not enabled.";
+      } else if (errString.includes('api key')) {
+        errorMessage = "Invalid Google Gemini API Key. Please check your .env file.";
+      }
+
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -177,7 +189,7 @@ const App: React.FC = () => {
             <button onClick={() => setActiveActivity(null)} className="absolute top-6 right-6 z-[4010] bg-black/40 hover:bg-black/60 p-4 rounded-full text-white transition-all backdrop-blur">
               <X size={24} />
             </button>
-            
+
             <div className="w-full md:w-1/2 h-[350px] md:h-auto bg-slate-900 relative overflow-hidden">
               {isGeneratingImage && !imageCache[activeActivity.place] ? (
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900 text-white gap-4">
@@ -200,45 +212,45 @@ const App: React.FC = () => {
             </div>
 
             <div className="w-full md:w-1/2 p-10 md:p-16 overflow-y-auto max-h-[50vh] md:max-h-[90vh] bg-white text-slate-900">
-               <div className="space-y-12">
-                  <section>
-                    <div className="flex items-center gap-4 mb-4 text-blue-600 font-black uppercase tracking-[0.2em] text-[10px]">
-                      <BookOpen size={20} /> Historical Perspective
-                    </div>
-                    <p className="text-slate-700 text-xl leading-relaxed font-medium">
-                      {activeActivity.tour_guide_info.history}
-                    </p>
-                  </section>
-
-                  <section>
-                    <div className="flex items-center gap-4 mb-4 text-orange-500 font-black uppercase tracking-[0.2em] text-[10px]">
-                      <Lightbulb size={20} /> Guide's Fun Facts
-                    </div>
-                    <ul className="space-y-4">
-                      {activeActivity.tour_guide_info.fun_facts.map((fact, i) => (
-                        <li key={i} className="flex gap-4 text-slate-800 font-bold items-start leading-relaxed bg-slate-50 p-6 rounded-2xl border border-slate-100 shadow-sm">
-                          <span className="text-blue-500 mt-1 flex-shrink-0">✦</span>
-                          {fact}
-                        </li>
-                      ))}
-                    </ul>
-                  </section>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
-                     <div className="bg-green-50 rounded-3xl p-8 border border-green-100 shadow-sm">
-                        <h4 className="flex items-center gap-2 text-green-700 font-black uppercase tracking-widest text-[10px] mb-3">
-                          <Info size={16} /> Local Expert Tip
-                        </h4>
-                        <p className="text-green-900 font-bold text-sm leading-relaxed">{activeActivity.tour_guide_info.local_tip}</p>
-                     </div>
-                     <div className="bg-blue-50 rounded-3xl p-8 border border-blue-100 shadow-sm">
-                        <h4 className="flex items-center gap-2 text-blue-700 font-black uppercase tracking-widest text-[10px] mb-3">
-                          <Clock size={16} /> Best Visit Time
-                        </h4>
-                        <p className="text-blue-900 font-bold text-sm leading-relaxed">{activeActivity.tour_guide_info.best_time_to_visit}</p>
-                     </div>
+              <div className="space-y-12">
+                <section>
+                  <div className="flex items-center gap-4 mb-4 text-blue-600 font-black uppercase tracking-[0.2em] text-[10px]">
+                    <BookOpen size={20} /> Historical Perspective
                   </div>
-               </div>
+                  <p className="text-slate-700 text-xl leading-relaxed font-medium">
+                    {activeActivity.tour_guide_info.history}
+                  </p>
+                </section>
+
+                <section>
+                  <div className="flex items-center gap-4 mb-4 text-orange-500 font-black uppercase tracking-[0.2em] text-[10px]">
+                    <Lightbulb size={20} /> Guide's Fun Facts
+                  </div>
+                  <ul className="space-y-4">
+                    {activeActivity.tour_guide_info.fun_facts.map((fact, i) => (
+                      <li key={i} className="flex gap-4 text-slate-800 font-bold items-start leading-relaxed bg-slate-50 p-6 rounded-2xl border border-slate-100 shadow-sm">
+                        <span className="text-blue-500 mt-1 flex-shrink-0">✦</span>
+                        {fact}
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+                  <div className="bg-green-50 rounded-3xl p-8 border border-green-100 shadow-sm">
+                    <h4 className="flex items-center gap-2 text-green-700 font-black uppercase tracking-widest text-[10px] mb-3">
+                      <Info size={16} /> Local Expert Tip
+                    </h4>
+                    <p className="text-green-900 font-bold text-sm leading-relaxed">{activeActivity.tour_guide_info.local_tip}</p>
+                  </div>
+                  <div className="bg-blue-50 rounded-3xl p-8 border border-blue-100 shadow-sm">
+                    <h4 className="flex items-center gap-2 text-blue-700 font-black uppercase tracking-widest text-[10px] mb-3">
+                      <Clock size={16} /> Best Visit Time
+                    </h4>
+                    <p className="text-blue-900 font-bold text-sm leading-relaxed">{activeActivity.tour_guide_info.best_time_to_visit}</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -252,7 +264,7 @@ const App: React.FC = () => {
           </div>
           <h1 className="text-2xl font-black bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent tracking-tighter">VoyageAI</h1>
         </div>
-        
+
         {trip && (
           <div className="flex bg-slate-100 p-1.5 rounded-2xl shadow-inner border border-slate-200">
             <button onClick={() => setViewMode('schedule')} className={`px-6 py-2 rounded-xl text-sm font-black transition-all ${viewMode === 'schedule' ? 'bg-white text-blue-600 shadow-md' : 'text-slate-500 hover:text-slate-700'}`}>
@@ -285,54 +297,54 @@ const App: React.FC = () => {
       <main className="flex-1 relative overflow-hidden bg-slate-50">
         {isTranslating && (
           <div className="absolute inset-0 bg-white/70 backdrop-blur-lg z-[2500] flex flex-col items-center justify-center">
-             <div className="bg-white p-14 rounded-[3rem] shadow-2xl flex flex-col items-center gap-8 border border-slate-100 animate-in zoom-in-95">
-                <Loader2 className="animate-spin text-blue-600" size={72} />
-                <div className="text-center">
-                  <h3 className="text-3xl font-black text-slate-900 mb-3 tracking-tighter">Syncing Itinerary Data</h3>
-                  <p className="text-slate-500 font-bold text-lg">Updating details for {selectedLanguage}...</p>
-                </div>
-             </div>
+            <div className="bg-white p-14 rounded-[3rem] shadow-2xl flex flex-col items-center gap-8 border border-slate-100 animate-in zoom-in-95">
+              <Loader2 className="animate-spin text-blue-600" size={72} />
+              <div className="text-center">
+                <h3 className="text-3xl font-black text-slate-900 mb-3 tracking-tighter">Syncing Itinerary Data</h3>
+                <p className="text-slate-500 font-bold text-lg">Updating details for {selectedLanguage}...</p>
+              </div>
+            </div>
           </div>
         )}
 
         {!trip && (
           <div className="flex-1 h-full flex items-center justify-center p-8 bg-slate-50 overflow-y-auto">
-             <div className="max-w-3xl w-full space-y-12 py-12">
-                <div className="text-center">
-                  <div className="inline-block p-6 bg-white text-blue-600 rounded-[2.5rem] mb-8 shadow-2xl shadow-blue-100 border border-blue-50">
-                    <Sparkles size={56} />
-                  </div>
-                  <h2 className="text-6xl font-black text-slate-900 mb-6 tracking-tighter leading-none">The Only <span className="text-blue-600 underline decoration-blue-100 underline-offset-8">Accurate</span> <br/>AI Tour Guide.</h2>
-                  <p className="text-slate-500 text-xl font-medium max-w-xl mx-auto leading-relaxed">Paste your travel link or flyer photo. We mirror the exact schedule and add historical depth instantly.</p>
+            <div className="max-w-3xl w-full space-y-12 py-12">
+              <div className="text-center">
+                <div className="inline-block p-6 bg-white text-blue-600 rounded-[2.5rem] mb-8 shadow-2xl shadow-blue-100 border border-blue-50">
+                  <Sparkles size={56} />
                 </div>
-                <form onSubmit={handlePlanTrip} className="relative group">
-                  <div className="bg-white border-2 border-slate-200 rounded-[3rem] shadow-[0_40px_80px_-20px_rgba(0,0,0,0.1)] overflow-hidden focus-within:border-blue-500 focus-within:ring-[12px] focus-within:ring-blue-50 transition-all duration-500">
-                    <textarea 
-                      value={userInput} 
-                      onChange={(e) => setUserInput(e.target.value)} 
-                      placeholder="Paste your tour link (e.g. TripAdvisor, Travel Agency) or describe a dream trip..." 
-                      className="w-full px-12 py-10 h-48 text-2xl outline-none text-slate-900 bg-white placeholder:text-slate-300 font-bold resize-none leading-relaxed" 
-                    />
-                    {selectedImage && (
-                      <div className="px-12 pb-8">
-                        <div className="relative inline-block group/img">
-                          <img src={`data:${selectedImage.mimeType};base64,${selectedImage.data}`} className="w-48 h-48 object-cover rounded-[2rem] border-4 border-blue-500 shadow-2xl" />
-                          <button type="button" onClick={() => setSelectedImage(null)} className="absolute -top-4 -right-4 bg-red-600 text-white p-3 rounded-full shadow-xl hover:scale-110 active:scale-95 transition-all"><X size={20} /></button>
-                        </div>
+                <h2 className="text-6xl font-black text-slate-900 mb-6 tracking-tighter leading-none">The Only <span className="text-blue-600 underline decoration-blue-100 underline-offset-8">Accurate</span> <br />AI Tour Guide.</h2>
+                <p className="text-slate-500 text-xl font-medium max-w-xl mx-auto leading-relaxed">Paste your travel link or flyer photo. We mirror the exact schedule and add historical depth instantly.</p>
+              </div>
+              <form onSubmit={handlePlanTrip} className="relative group">
+                <div className="bg-white border-2 border-slate-200 rounded-[3rem] shadow-[0_40px_80px_-20px_rgba(0,0,0,0.1)] overflow-hidden focus-within:border-blue-500 focus-within:ring-[12px] focus-within:ring-blue-50 transition-all duration-500">
+                  <textarea
+                    value={userInput}
+                    onChange={(e) => setUserInput(e.target.value)}
+                    placeholder="Paste your tour link (e.g. TripAdvisor, Travel Agency) or describe a dream trip..."
+                    className="w-full px-12 py-10 h-48 text-2xl outline-none text-slate-900 bg-white placeholder:text-slate-300 font-bold resize-none leading-relaxed"
+                  />
+                  {selectedImage && (
+                    <div className="px-12 pb-8">
+                      <div className="relative inline-block group/img">
+                        <img src={`data:${selectedImage.mimeType};base64,${selectedImage.data}`} className="w-48 h-48 object-cover rounded-[2rem] border-4 border-blue-500 shadow-2xl" />
+                        <button type="button" onClick={() => setSelectedImage(null)} className="absolute -top-4 -right-4 bg-red-600 text-white p-3 rounded-full shadow-xl hover:scale-110 active:scale-95 transition-all"><X size={20} /></button>
                       </div>
-                    )}
-                    <div className="bg-slate-50 px-10 py-6 flex items-center justify-between border-t border-slate-100">
-                      <button type="button" onClick={() => fileInputRef.current?.click()} className="flex items-center gap-3 px-8 py-4 rounded-2xl bg-white border border-slate-200 text-slate-800 font-black hover:bg-white hover:border-blue-400 hover:text-blue-600 transition-all shadow-sm">
-                        <Camera size={24} className="text-blue-500" /> <span>Snap Flyer</span>
-                      </button>
-                      <button type="submit" disabled={isLoading || (!userInput.trim() && !selectedImage)} className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white px-12 py-5 rounded-[2rem] flex items-center gap-4 transition-all font-black shadow-xl shadow-blue-200 hover:translate-y-[-2px] active:translate-y-[1px]">
-                        {isLoading ? <Loader2 className="animate-spin" size={28} /> : <>Generate Guide <ChevronRight size={24} /></>}
-                      </button>
                     </div>
+                  )}
+                  <div className="bg-slate-50 px-10 py-6 flex items-center justify-between border-t border-slate-100">
+                    <button type="button" onClick={() => fileInputRef.current?.click()} className="flex items-center gap-3 px-8 py-4 rounded-2xl bg-white border border-slate-200 text-slate-800 font-black hover:bg-white hover:border-blue-400 hover:text-blue-600 transition-all shadow-sm">
+                      <Camera size={24} className="text-blue-500" /> <span>Snap Flyer</span>
+                    </button>
+                    <button type="submit" disabled={isLoading || (!userInput.trim() && !selectedImage)} className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white px-12 py-5 rounded-[2rem] flex items-center gap-4 transition-all font-black shadow-xl shadow-blue-200 hover:translate-y-[-2px] active:translate-y-[1px]">
+                      {isLoading ? <Loader2 className="animate-spin" size={28} /> : <>Generate Guide <ChevronRight size={24} /></>}
+                    </button>
                   </div>
-                  {error && <p className="mt-6 text-center text-red-600 font-black bg-red-50 py-4 rounded-2xl border border-red-100">{error}</p>}
-                </form>
-             </div>
+                </div>
+                {error && <p className="mt-6 text-center text-red-600 font-black bg-red-50 py-4 rounded-2xl border border-red-100">{error}</p>}
+              </form>
+            </div>
           </div>
         )}
 
@@ -342,9 +354,9 @@ const App: React.FC = () => {
             <div className="bg-white px-8 py-5 border-b border-slate-200 overflow-x-auto scrollbar-hide flex gap-4 items-center sticky top-0 z-30">
               <span className="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] mr-6 whitespace-nowrap">Plan Chronology</span>
               {trip.itinerary.map((day) => (
-                <button 
-                  key={day.day} 
-                  onClick={() => setSelectedDay(day.day)} 
+                <button
+                  key={day.day}
+                  onClick={() => setSelectedDay(day.day)}
                   className={`flex-shrink-0 px-7 py-3 rounded-2xl font-black text-sm transition-all border ${selectedDay === day.day ? 'bg-blue-600 text-white border-blue-600 shadow-xl shadow-blue-100' : 'bg-white text-slate-500 border-slate-200 hover:border-blue-400'}`}
                 >
                   Day {day.day}
@@ -370,10 +382,10 @@ const App: React.FC = () => {
                     </div>
 
                     <div className="space-y-8">
-                      {currentDayData?.activities.map((activity, idx) => (
+                      {currentDayData?.activities?.map((activity, idx) => (
                         <div key={idx} className="bg-white rounded-[2.5rem] p-10 shadow-sm border border-slate-200 hover:shadow-2xl hover:border-blue-100 transition-all flex flex-col md:flex-row gap-10 group">
                           <div className="flex-shrink-0 flex md:flex-col items-center justify-center gap-4 md:border-r md:border-slate-100 md:pr-12">
-                            <button 
+                            <button
                               onClick={() => handleIconClick(activity)}
                               className={`p-7 rounded-[2.5rem] transition-all transform group-hover:scale-110 shadow-xl border-4 relative ${imageCache[activity.place] ? 'bg-blue-600 text-white border-blue-400 shadow-blue-200' : 'bg-white text-blue-600 border-blue-50 shadow-blue-50'}`}
                             >
@@ -394,7 +406,7 @@ const App: React.FC = () => {
                             <p className="text-slate-600 text-xl leading-relaxed mb-8 font-medium">{activity.description}</p>
                             <div className="flex flex-wrap gap-4">
                               <button onClick={() => handleIconClick(activity)} className="flex items-center gap-3 text-sm font-black text-blue-600 bg-blue-50 border-2 border-blue-100 px-8 py-4 rounded-full hover:bg-blue-600 hover:text-white transition-all uppercase tracking-[0.2em] shadow-lg shadow-blue-50">
-                                 <BookOpen size={18} /> {imageCache[activity.place] ? 'View Tour Insights' : 'Retrieving Insights...'}
+                                <BookOpen size={18} /> {imageCache[activity.place] ? 'View Tour Insights' : 'Retrieving Insights...'}
                               </button>
                             </div>
                           </div>
@@ -410,12 +422,12 @@ const App: React.FC = () => {
                   <div className="h-full w-full bg-white rounded-[4rem] shadow-2xl border border-slate-200 overflow-hidden relative">
                     <MapView trip={trip} selectedDay={selectedDay} userLocation={userLocation} />
                     <div className="absolute bottom-12 left-1/2 -translate-x-1/2 bg-white rounded-[3rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.2)] px-12 py-6 z-[1000] border border-slate-200 flex items-center gap-12">
-                       <button disabled={selectedDay === 1} onClick={() => setSelectedDay(prev => prev - 1)} className="p-5 text-slate-400 hover:text-blue-600 disabled:opacity-20 transition-all hover:bg-slate-50 rounded-full"><ChevronLeft size={36} /></button>
-                       <div className="text-center min-w-[160px] border-x-2 border-slate-100 px-10">
-                         <p className="text-[11px] font-black text-blue-600 uppercase tracking-[0.3em] mb-2">Selected Day</p>
-                         <p className="text-5xl font-black text-slate-900 leading-none tracking-tighter">{selectedDay}</p>
-                       </div>
-                       <button disabled={selectedDay === trip.itinerary.length} onClick={() => setSelectedDay(prev => prev + 1)} className="p-5 text-slate-400 hover:text-blue-600 disabled:opacity-20 transition-all hover:bg-slate-50 rounded-full"><ChevronRight size={36} /></button>
+                      <button disabled={selectedDay === 1} onClick={() => setSelectedDay(prev => prev - 1)} className="p-5 text-slate-400 hover:text-blue-600 disabled:opacity-20 transition-all hover:bg-slate-50 rounded-full"><ChevronLeft size={36} /></button>
+                      <div className="text-center min-w-[160px] border-x-2 border-slate-100 px-10">
+                        <p className="text-[11px] font-black text-blue-600 uppercase tracking-[0.3em] mb-2">Selected Day</p>
+                        <p className="text-5xl font-black text-slate-900 leading-none tracking-tighter">{selectedDay}</p>
+                      </div>
+                      <button disabled={selectedDay === trip.itinerary.length} onClick={() => setSelectedDay(prev => prev + 1)} className="p-5 text-slate-400 hover:text-blue-600 disabled:opacity-20 transition-all hover:bg-slate-50 rounded-full"><ChevronRight size={36} /></button>
                     </div>
                   </div>
                 </div>
@@ -426,24 +438,24 @@ const App: React.FC = () => {
                 <div className="!bg-white rounded-[3rem] border-2 border-slate-200 p-2.5 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.4)] ring-2 ring-white/50">
                   {selectedImage && (
                     <div className="!bg-slate-50 px-8 py-5 flex items-center gap-6 border-b border-slate-100 mb-2 rounded-t-[2.5rem]">
-                       <img src={`data:${selectedImage.mimeType};base64,${selectedImage.data}`} className="w-20 h-20 rounded-[1.5rem] object-cover border-4 border-white shadow-xl" />
-                       <div className="flex-1">
-                          <p className="text-[11px] font-black text-blue-600 uppercase tracking-[0.3em] mb-2">Visual Insight</p>
-                          <p className="text-md font-bold text-slate-600">Syncing updates from visual material...</p>
-                       </div>
-                       <button onClick={() => setSelectedImage(null)} className="p-3 text-slate-300 hover:text-red-500 transition-all hover:rotate-90"><X size={28} /></button>
+                      <img src={`data:${selectedImage.mimeType};base64,${selectedImage.data}`} className="w-20 h-20 rounded-[1.5rem] object-cover border-4 border-white shadow-xl" />
+                      <div className="flex-1">
+                        <p className="text-[11px] font-black text-blue-600 uppercase tracking-[0.3em] mb-2">Visual Insight</p>
+                        <p className="text-md font-bold text-slate-600">Syncing updates from visual material...</p>
+                      </div>
+                      <button onClick={() => setSelectedImage(null)} className="p-3 text-slate-300 hover:text-red-500 transition-all hover:rotate-90"><X size={28} /></button>
                     </div>
                   )}
                   <form onSubmit={handleAdjustTrip} className="flex items-center gap-3 !bg-white rounded-[2.5rem]">
                     <button type="button" onClick={() => fileInputRef.current?.click()} className="p-6 text-slate-400 hover:text-blue-600 transition-colors" title="Reference Image">
                       <Camera size={32} />
                     </button>
-                    <input 
-                      value={chatInput} 
-                      onChange={(e) => setChatInput(e.target.value)} 
-                      placeholder="Modify the tour, add stops, or ask for facts..." 
-                      className="flex-1 !bg-white border-none rounded-[2rem] px-5 py-6 text-xl font-bold outline-none !text-slate-900 placeholder:text-slate-300" 
-                      onFocus={() => setShowChat(true)} 
+                    <input
+                      value={chatInput}
+                      onChange={(e) => setChatInput(e.target.value)}
+                      placeholder="Modify the tour, add stops, or ask for facts..."
+                      className="flex-1 !bg-white border-none rounded-[2rem] px-5 py-6 text-xl font-bold outline-none !text-slate-900 placeholder:text-slate-300"
+                      onFocus={() => setShowChat(true)}
                     />
                     <button type="submit" disabled={isUpdating || (!chatInput.trim() && !selectedImage)} className="bg-blue-600 hover:bg-blue-700 text-white p-6 rounded-[2.2rem] transition-all flex items-center justify-center shadow-2xl shadow-blue-400/30 disabled:bg-slate-200 disabled:shadow-none hover:scale-105 active:scale-95">
                       {isUpdating ? <Loader2 className="animate-spin" size={30} /> : <Send size={30} />}
