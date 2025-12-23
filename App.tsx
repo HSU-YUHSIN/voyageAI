@@ -149,7 +149,8 @@ const App: React.FC = () => {
       if (errString.includes('quota') || errString.includes('429') || errString.includes('resource exhausted')) {
         errorMessage = "Google Gemini API Quota Exceeded. Please check your API usage limits.";
       } else if (errString.includes('403')) {
-        errorMessage = "Access Denied (403). Your API Key may have restrictions (e.g. localhost not allowed) or the API is not enabled.";
+        const keyStatus = import.meta.env.VITE_GEMINI_API_KEY ? `(Key Length: ${import.meta.env.VITE_GEMINI_API_KEY.length})` : "(Key Missing)";
+        errorMessage = `Access Denied (403). ${keyStatus}. Check: 1. API Enabled in Google Console? 2. 'Generative Language API' enabled? 3. Referrer restrictions?`;
       } else if (errString.includes('api key')) {
         errorMessage = "Invalid Google Gemini API Key. Please check your .env file.";
       }
