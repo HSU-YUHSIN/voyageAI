@@ -148,6 +148,8 @@ const App: React.FC = () => {
       const errString = err.toString().toLowerCase();
       if (errString.includes('quota') || errString.includes('429') || errString.includes('resource exhausted')) {
         errorMessage = "Google Gemini API Quota Exceeded. Please check your API usage limits.";
+      } else if (errString.includes('leaked')) {
+        errorMessage = "Security Alert: Your API Key was detected publicly and blocked by Google. Please generate a NEW Key in Google AI Studio and update your GitHub Secret.";
       } else if (errString.includes('403')) {
         const key = import.meta.env.VITE_GEMINI_API_KEY;
         const keyDebug = key ? `(Key: ${key.substring(0, 4)}... Length: ${key.length})` : "(Key Missing)";

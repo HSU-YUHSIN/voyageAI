@@ -2,7 +2,7 @@
 import { GoogleGenerativeAI, SchemaType, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
 
 // Using the key found in test_search.js
-const apiKey = "AIzaSyCL35zP6nDwbsu9R0QGh1qAVa3nMORH-H0";
+const apiKey = process.env.GEMINI_API_KEY || "YOUR_API_KEY";
 const genAI = new GoogleGenerativeAI(apiKey);
 
 const userInput = "https://www.tourcenter.com.tw/travel/detail/print?NormGroupID=bd2c57df-197a-4ed6-b98f-e70a0c65a0a2&GroupID=26JT215BR9-K&PrintItem=ALL&utm_source=sidebar&utm_medium=copy";

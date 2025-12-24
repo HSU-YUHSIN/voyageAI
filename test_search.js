@@ -1,7 +1,7 @@
 
 import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 
-const apiKey = "AIzaSyCL35zP6nDwbsu9R0QGh1qAVa3nMORH-H0";
+const apiKey = process.env.GEMINI_API_KEY || "YOUR_API_KEY";
 const genAI = new GoogleGenerativeAI(apiKey);
 
 const TRIP_SCHEMA = {
