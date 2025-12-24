@@ -74,11 +74,8 @@ const App: React.FC = () => {
     }
   }, [imageCache]);
 
-  useEffect(() => {
-    if (trip) {
-      prefetchImages(trip, selectedDay);
-    }
-  }, [trip, selectedDay, prefetchImages]);
+  // Prefetching removed to save API quota. 
+  // Images will be fetched on demand when user clicks an activity.
 
   useEffect(() => {
     if (trip) {
