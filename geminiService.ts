@@ -78,7 +78,7 @@ export const generateTripPlan = async (
 ): Promise<TripPlan> => {
   try {
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash",
+      model: "gemini-1.5-flash",
       // @ts-ignore
       tools: [{ googleSearch: {} }],
       generationConfig: {
@@ -154,7 +154,7 @@ export const updateTripPlan = async (
 ): Promise<TripPlan> => {
   try {
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash",
+      model: "gemini-1.5-flash",
       // @ts-ignore
       tools: [{ googleSearch: {} }],
       generationConfig: {
@@ -212,7 +212,7 @@ export const translateTripPlan = async (
 ): Promise<TripPlan> => {
   try {
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash", // 2.5 Flash is good for JSON translation
+      model: "gemini-1.5-flash", // 2.5 Flash is good for JSON translation
       generationConfig: {
         responseMimeType: "application/json",
         responseSchema: TRIP_SCHEMA,
